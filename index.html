@@ -13,7 +13,7 @@
 
 <main>
 
-  <!-- ===================== COLONNE GAUCHE : LA SCÈNE ===================== -->
+  <!-- ==================== COLONNE GAUCHE : LA SCÈNE ==================== -->
   <section class="stage" id="stage">
     <h1>Bus Clicker</h1>
     <div id="chip"></div>
@@ -48,7 +48,7 @@
     <div id="fx"></div>
   </section>
 
-  <!-- ===================== COLONNE DROITE : LA BOUTIQUE ===================== -->
+  <!-- ==================== COLONNE DROITE : LA BOUTIQUE ==================== -->
   <section class="shop">
     <div class="tabs" id="tabs" role="tablist"></div>
 
@@ -103,9 +103,9 @@
 
 <script>
 /* ================================================================
-   CONFIG : mets l'URL de ton Worker Cloudflare ici
+   ⚙️ CONFIG — Mets ici l'URL de TON Worker Cloudflare
    ================================================================ */
-const API = "https://bus-clicker.tonpseudo.workers.dev";
+const API = "https://bus-clicker.timeobonnin-prog.workers.dev";
 
 const $=id=>document.getElementById(id);
 const h=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -445,72 +445,112 @@ $("mute").addEventListener("click",()=>{
   $("mute").textContent=s.mute?"Son coupé":"Son activé";
 });
 
-/* ============================ API GitHub via Worker ============================ */
+/* ============================================================
+   🌐 API GitHub via Cloudflare Worker
+   ------------------------------------------------------------
+   Le jeu appelle :
+     GET  /db   → récupère TOUT data.json
+     POST /db   → écrit TOUT data.json (le Worker commit chez GitHub)
+   ============================================================ */
 let remoteDB=null,friends=[],fdata={};
 const say=(id,t)=>$(id).textContent=t;
 
 async function loadDB(){
-  try{const r=await fetch(API+"/db");remoteDB=await r.json()}catch(e){remoteDB={}}
+  try{
+    const r=await fetch(API+"/db");
+    remoteDB=await r.json();
+  }catch(e){remoteDB={}}
   if(!remoteDB.pseudos)remoteDB.pseudos={};
   if(!remoteDB.players)remoteDB.players={};
   if(!remoteDB.friends)remoteDB.friends={};
 }
+
 async function saveDB(){
-  try{await fetch(API+"/db",{method:"POST",body:JSON.stringify(remoteDB)})}catch(e){}
+  try{
+    await fetch(API+"/db",{
+      method:"POST",
+      body:JSON.stringify(remoteDB)
+    });
+  }catch(e){}
 }
+
+/* Envoie MES stats dans data.json (players[monUID]) */
 function sync(){
   if(!remoteDB||!s.pseudo)return;
   remoteDB.players[s.uid]={
-    pseudo:s.pseudo,avatar:s.avatar,
-    all:Math.floor(s.all),cps:cps(),
-    skin:SK[s.skin][1],t:Date.now()
+    pseudo:s.pseudo,
+    avatar:s.avatar,
+    all:Math.floor(s.all),
+    cps:Math.round(cps()*10)/10,
+    skin:SK[s.skin][1],
+    t:Date.now()
   };
   saveDB();
 }
+
+/* Réserver un pseudo : écrit dans pseudos + players */
 async function claim(){
-  const raw=$("pin").value.trim(),id=raw.toLowerCase();
+  const raw=$("pin").value.trim();
+  const id=raw.toLowerCase();
   if(!/^[a-z0-9_-]{3,16}$/.test(id))
     return say("pmsg","3 à 16 caractères : lettres sans accent, chiffres, _ ou -");
   if(!remoteDB)return say("pmsg","Connexion au serveur impossible.");
   await loadDB();
-  const cur=remoteDB.pseudos[id];
-  if(cur&&cur.owner!==s.uid)return say("pmsg","Ce pseudo est déjà pris.");
+
+  const existing=remoteDB.pseudos[id];
+  if(existing && existing.owner!==s.uid)
+    return say("pmsg","Ce pseudo est déjà pris.");
+
   const old=s.pseudo.toLowerCase();
-  if(old&&old!==id&&remoteDB.pseudos[old]&&remoteDB.pseudos[old].owner===s.uid)
+  if(old && old!==id && remoteDB.pseudos[old] && remoteDB.pseudos[old].owner===s.uid)
     delete remoteDB.pseudos[old];
+
   remoteDB.pseudos[id]={owner:s.uid,pseudo:raw};
-  s.pseudo=raw;save();
   remoteDB.players[s.uid]={
     pseudo:raw,avatar:s.avatar,
-    all:Math.floor(s.all),cps:cps(),
+    all:Math.floor(s.all),cps:Math.round(cps()*10)/10,
     skin:SK[s.skin][1],t:Date.now()
   };
+  s.pseudo=raw;save();
   await saveDB();
+
   render();renderTab();
-  say("pmsg","Pseudo réservé : "+raw);
+  say("pmsg","✅ Pseudo réservé : "+raw);
 }
+
+/* Ajouter un ami : écrit dans friends[monUID] */
 async function addFriend(){
   const id=$("fin").value.trim().toLowerCase();
   if(!remoteDB)return say("fmsg","Connexion au serveur impossible.");
   if(!s.pseudo)return say("fmsg","Réserve d'abord ton pseudo dans l'onglet Profil.");
   await loadDB();
+
   const p=remoteDB.pseudos[id];
   if(!p)return say("fmsg","Aucun joueur avec ce pseudo.");
   if(p.owner===s.uid)return say("fmsg","C'est ton propre pseudo.");
+
   const list=remoteDB.friends[s.uid]||(remoteDB.friends[s.uid]=[]);
   if(list.includes(p.owner))return say("fmsg","Déjà dans ta liste.");
+
   list.push(p.owner);
   await saveDB();
   friends=list;watch();
-  say("fmsg","Ami ajouté.");$("fin").value="";
+
+  say("fmsg","✅ Ami ajouté.");
+  $("fin").value="";
 }
+
+/* Lit les stats des amis depuis players[] */
 async function watch(){
   await loadDB();
-  const list=remoteDB.friends[s.uid]||[];
-  friends=list;fdata={};
-  list.forEach(id=>{if(remoteDB.players[id])fdata[id]=remoteDB.players[id]});
+  friends=remoteDB.friends[s.uid]||[];
+  fdata={};
+  friends.forEach(id=>{
+    if(remoteDB.players[id]) fdata[id]=remoteDB.players[id];
+  });
   if(cur==="friends")renderFriends();
 }
+
 function renderFriends(){
   const l=$("flist");
   if(!friends.length){
@@ -519,14 +559,16 @@ function renderFriends(){
   }
   l.replaceChildren(...friends.map(id=>{
     const d=fdata[id],b=h("div","item");
+    const online=d && (Date.now()-d.t<60000);
     b.append(
       h("b","",d?d.avatar+" "+d.pseudo:"Joueur"),
       h("small","",d?fmt(d.all)+" passagers · "+dec(d.cps)+"/s":"Pas encore de stats"),
-      h("span","cost","En ligne")
+      h("span","cost",online?"En ligne":"Hors ligne")
     );
     return b;
   }));
 }
+
 $("pbtn").addEventListener("click",claim);
 $("fbtn").addEventListener("click",addFriend);
 
@@ -576,7 +618,7 @@ render();
   sync();
   setInterval(()=>{
     sync();
-    if(cur==="friends")watch();
+    if(cur==="friends") watch();
   },15000);
 })();
 </script>
