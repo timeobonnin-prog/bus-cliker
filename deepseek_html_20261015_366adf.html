@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bus Clicker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/* ============ RESET ============ */
+*{box-sizing:border-box}
+html,body,div,span,h1,h2,h3,h4,h5,h6,p,ul,ol{margin:0;padding:0}
+ol,ul{list-style:none}
+button{outline:none;border:none;font:inherit;cursor:pointer}
+button:focus{outline:1px solid rgba(255,200,100,0.5);outline-offset:-1px}
+
+/* ============ BASE — THEME BUS ============ */
+:root{
+  --sky:#BFE3EC;             /* ciel dégagé */
+  --panel:#A9D6E2;           /* panneau bus bleu ciel */
+  --ink:#23262B;
+  --card:#FFF8E1;
+  --accent:#F5B800;          /* JAUNE BUS */
+  --red:#D64545;
+  --road:#2A2D33;            /* asphalte */
+  --roadlight:#3A3D44;
+  --bus:#F5B800;
+  --glass:#CDEBF3;
+  --seat:#6D4C41;            /* tissu de siège marron */
+  --seatdark:#3E2723;
+  --ticket:#FFF3B0;          /* ticket jaune pâle */
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sky:#14202B;--panel:#1C2C3A;--ink:#F4EFDD;--card:#24313F;--road:#0D1116;--glass:#9CCBD8}}
+:root[data-theme="dark"]{--sky:#14202B;--panel:#1C2C3A;--ink:#F4EFDD;--card:#24313F;--road:#0D1116;--glass:#9CCBD8}
+
+html,body{width:100%;height:100%}
+body{
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+  touch-action:manipulation;
+  color:#fff;
+  /* texture asphalte façon darkNoise.jpg de Cookie Clicker */
+  background:#1a1c20;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 1px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.02) 1px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(0,0,0,0.3) 1px, transparent 1px),
+    linear-gradient(180deg,#1a1c20 0%,#0d0f12 100%);
+  background-size:20px 20px,30px 30px,15px 15px,100% 100%;
+  font-family:Tahoma,Arial,sans-serif;
+  font-size:13px;
+  overflow:hidden;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+
+/* ============ TITRES (Merriweather, comme Cookie Clicker) ============ */
+.titleFont,.title,.section,.lockedTitle,.smallFancyButton{font-family:'Merriweather',Georgia,serif}
+.title,.section,.lockedTitle{font-size:22px;color:#fff;text-shadow:0 1px 4px #000}
+.section{
+  font-variant:small-caps;text-align:center;padding:0 16px;margin:12px 0;
+  background:linear-gradient(to right,rgba(0,0,0,0),rgba(0,0,0,0),rgba(0,0,0,0.5),rgba(0,0,0,0),rgba(0,0,0,0));
+  text-shadow:0 -2px 6px rgba(255,255,200,0.5),0 1px 0 rgba(100,100,100,1),0 2px 4px rgba(0,0,0,1);
+}
+.section:before,.section:after{
+  content:'';display:block;height:1px;margin:6px 0;
+  background:linear-gradient(to right,rgba(255,255,255,0),rgba(255,255,255,0),rgba(255,255,255,0.25),rgba(255,255,255,0),rgba(255,255,255,0));
+}
+
+/* ============ LAYOUT 3 COLONNES ============ */
+#wrapper{width:100%;height:100%;position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:0 0}
+#game{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden}
+
+#sectionLeft{position:absolute;left:0;top:0;width:30%;bottom:0;min-width:100px}
+#sectionMiddle{position:absolute;left:30%;padding-left:16px;margin-right:15px;top:0;right:318px;bottom:0;overflow:hidden}
+#sectionRight{
+  height:100%;position:absolute;top:0;right:0;width:300px;overflow-x:hidden;overflow-y:scroll;
+  /* fond "cuir de siège bus" à la place de panelBG.png */
+  background:linear-gradient(180deg,#3E2723 0%,#2D1B17 100%);
+  box-shadow:-4px 0 12px rgba(0,0,0,0.6) inset;
+}
+::-webkit-scrollbar{-webkit-appearance:none;width:12px}
+::-webkit-scrollbar-track{background:#0d0f12}
+::-webkit-scrollbar-thumb{background:var(--accent);border:2px solid #0d0f12}
+
+/* séparateurs façon Cookie Clicker */
+.separatorLeft,.separatorRight{
+  width:16px;height:100%;position:absolute;top:0;bottom:0;z-index:100;
+  /* motif "côtes de bus" (au lieu du panelVertical.png) */
+  background:repeating-linear-gradient(0deg,#1a1c20 0px,#1a1c20 8px,#2a2d33 8px,#2a2d33 16px);
+  box-shadow:0 0 8px rgba(0,0,0,0.8);
+}
+.separatorLeft{left:30%}
+.separatorRight{right:300px}
+
+/* ============ SCÈNE CENTRALE (le bus) ============ */
+.stage{position:relative;padding:18px 16px 24px;text-align:center;height:100%}
+h1{font-family:'Merriweather',serif;font-size:clamp(22px,6vw,30px);margin:0 0 6px;text-shadow:0 1px 4px #000}
+#chip{font-size:15px;font-weight:800;margin-bottom:8px;color:#fff;text-shadow:0 1px 2px #000}
+#n{font-family:'Merriweather',serif;font-size:clamp(42px,12vw,70px);line-height:1;color:#fff;text-shadow:0 2px 8px #000,0 0 20px rgba(245,184,0,0.4)}
+.lbl{font-size:17px;font-weight:800;margin-top:4px;color:var(--ticket);text-shadow:0 1px 2px #000}
+#ps{font-size:15px;opacity:.85;color:#fff}
+
+/* Le bus cliquable */
+#bus{
+  display:block;margin:16px auto 0;width:min(420px,92%);
+  background:none;border:0;padding:0;cursor:pointer;
+  touch-action:manipulation;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;z-index:1;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,0.6));
+}
+#bus:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+#bus svg{width:100%;height:auto;display:block;pointer-events:none}
+
+/* La route sous le bus */
+.road{height:20px;margin:-12px 4px 0;border-radius:4px;background:var(--road);position:relative;box-shadow:0 4px 12px rgba(0,0,0,0.6) inset}
+.road::after{content:"";position:absolute;left:12px;right:12px;top:9px;height:4px;
+  background:repeating-linear-gradient(90deg,#FFF3B0 0 22px,transparent 22px 40px);
+  box-shadow:0 0 4px rgba(255,243,176,0.5);}
+
+#fx{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+.pop{position:absolute;font-family:'Merriweather',serif;font-size:22px;white-space:nowrap;text-shadow:0 2px 0 #000,0 0 8px rgba(245,184,0,0.8);color:var(--ticket)}
+.pop.horn{font-size:25px;color:var(--accent)}
+
+/* ============ SHOP (colonne droite) ============ */
+.tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 8px 10px;background:rgba(0,0,0,0.4)}
+.tabs button{
+  flex:none;font-family:'Merriweather',serif;font-variant:small-caps;font-weight:700;
+  color:#fff;background:linear-gradient(180deg,#5D4037 0%,#3E2723 100%);
+  border:1px solid #1a1a1a;border-radius:2px;padding:6px 12px;font-size:12px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.15) inset,0 2px 3px rgba(0,0,0,0.5);
+  text-shadow:0 1px 1px #000;
+}
+.tabs button[aria-selected="true"]{background:linear-gradient(180deg,#F5B800 0%,#B88700 100%);color:#23262B;text-shadow:0 1px 0 rgba(255,255,255,0.4)}
+
+h2{font-family:'Merriweather',serif;font-size:16px;margin:14px 12px 8px;color:var(--ticket);text-shadow:0 1px 2px #000}
+.tab{padding-bottom:64px}
+.tab[hidden]{display:none}
+
+.list{display:grid;gap:6px;padding:0 8px}
+
+/* Item de la boutique — cadre doré comme Cookie Clicker */
+.item{
+  display:grid;grid-template-columns:1fr auto auto;gap:2px 10px;align-items:center;
+  width:100%;text-align:left;font:inherit;color:#eee;
+  /* fond noir bruité + bordure dorée = style .framed de Cookie Clicker */
+  background:linear-gradient(rgba(255,255,255,0.05),rgba(0,0,0,0.4)),
+             radial-gradient(circle at 30% 20%,rgba(255,255,255,0.03) 1px,transparent 1px),
+             #1a1c20;
+  background-size:100% 100%,8px 8px,auto;
+  border:1px solid #e2dd48;
+  border-color:#ece2b6 #875526 #733726 #dfbc9a;
+  border-radius:2px;
+  padding:8px 10px;
+  box-shadow:0 0 1px 2px rgba(0,0,0,0.5),0 2px 4px rgba(0,0,0,0.25),0 0 2px 2px #000 inset,0 1px 0 1px rgba(255,255,255,0.5) inset;
+  text-shadow:0 1px 1px #000;
+  cursor:pointer;
+}
+.item[hidden]{display:none}
+.item.off{opacity:.55}
+.item.done{
+  background:linear-gradient(180deg,#F5B800 0%,#B88700 100%);
+  color:#23262B;opacity:1;text-shadow:0 1px 0 rgba(255,255,255,0.4);
+}
+.item b{font-weight:bold;font-size:13px;color:#fff}
+.item small{font-size:11px;opacity:.85;grid-column:1;color:#ccc}
+.cost{
+  grid-row:1/3;grid-column:2;
+  background:linear-gradient(180deg,#F5B800 0%,#B88700 100%);
+  color:#23262B;font-weight:bold;border-radius:2px;
+  padding:4px 10px;font-size:12px;white-space:nowrap;
+  box-shadow:0 1px 0 rgba(255,255,255,0.4) inset,0 -1px 0 rgba(0,0,0,0.4) inset;
+  text-shadow:0 1px 0 rgba(255,255,255,0.3);
+}
+.own{grid-row:1/3;grid-column:3;font-family:'Merriweather',serif;font-size:17px;color:#fff}
+.sw{display:inline-block;width:14px;height:14px;border-radius:2px;border:1px solid #000;vertical-align:-2px;margin-right:6px;box-shadow:0 0 4px rgba(255,255,255,0.3)}
+
+/* Champs texte / boutons */
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 12px}
+input{
+  flex:1;min-width:120px;font:inherit;font-weight:bold;color:#eee;
+  background:linear-gradient(180deg,#1a1c20,#0d0f12);
+  border:1px solid #e2dd48;border-color:#ece2b6 #875526 #733726 #dfbc9a;
+  border-radius:2px;padding:8px 10px;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.5) inset,0 1px 2px rgba(0,0,0,0.5) inset;
+}
+.btn{
+  font-family:'Merriweather',serif;font-variant:small-caps;font-weight:bold;
+  color:#23262B;
+  background:linear-gradient(180deg,#F5B800 0%,#B88700 100%);
+  border:1px solid #e2dd48;border-color:#ece2b6 #875526 #733726 #dfbc9a;
+  border-radius:2px;padding:8px 14px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.4) inset,0 -1px 0 rgba(0,0,0,0.4) inset;
+  text-shadow:0 1px 0 rgba(255,255,255,0.3);
+}
+.msg{min-height:20px;font-size:12px;margin:4px 12px;color:var(--ticket)}
+.stat{display:flex;justify-content:space-between;padding:6px 12px;border-bottom:1px dashed rgba(255,255,255,0.15);color:#fff}
+.av{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px}
+.av button{
+  font-size:22px;width:42px;height:42px;border-radius:4px;
+  border:1px solid #e2dd48;border-color:#ece2b6 #875526 #733726 #dfbc9a;
+  background:linear-gradient(180deg,#3E2723,#2D1B17);
+  cursor:pointer;
+}
+.av button[aria-pressed="true"]{background:linear-gradient(180deg,#F5B800,#B88700);color:#23262B}
+
+/* adaptation mobile */
+@media(max-width:820px){
+  #sectionLeft{position:relative;width:100%;height:auto}
+  #sectionMiddle{position:relative;left:0;right:0;padding:0 8px;margin:0}
+  #sectionRight{position:relative;width:100%;height:auto}
+  #game{position:relative;overflow:visible;height:auto}
+  body{overflow-y:auto}
+  #wrapper{position:relative;height:auto}
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+<div id="game">
+
+<section id="sectionLeft">
+  <div class="stage" id="stage">
+    <h1>Bus Clicker</h1>
+    <div id="chip"></div>
+    <div id="n">0</div>
+    <div class="lbl">passagers à bord</div>
+    <div id="ps"></div>
+    <button id="bus" aria-label="Klaxonner et faire monter des passagers">
+      <svg viewBox="0 0 260 160">
+        <!-- bus jaune avec bandeau rouge -->
+        <rect x="10" y="20" width="240" height="108" rx="24" fill="var(--bus)"/>
+        <rect x="10" y="90" width="240" height="14" fill="var(--red)"/>
+        <g fill="var(--glass)" stroke="#23262B" stroke-width="3">
+          <rect x="26" y="36" width="34" height="38" rx="7"/>
+          <rect x="68" y="36" width="34" height="38" rx="7"/>
+          <rect x="110" y="36" width="34" height="38" rx="7"/>
+          <rect x="152" y="36" width="34" height="38" rx="7"/>
+          <rect x="196" y="36" width="42" height="64" rx="8"/>
+        </g>
+        <circle cx="244" cy="112" r="7" fill="#FFF3B0" stroke="#23262B" stroke-width="3"/>
+        <g fill="#23262B">
+          <circle cx="70" cy="130" r="21"/>
+          <circle cx="196" cy="130" r="21"/>
+        </g>
+        <g fill="#9AA0A8">
+          <circle cx="70" cy="130" r="8"/>
+          <circle cx="196" cy="130" r="8"/>
+        </g>
+      </svg>
+    </button>
+    <div class="road"></div>
+    <div id="fx"></div>
+  </div>
+</section>
+
+<div class="separatorLeft"></div>
+<div class="separatorRight"></div>
+
+<section id="sectionMiddle">
+  <div class="section">Panneau de bord</div>
+  <div id="tabs" role="tablist" style="display:flex;gap:6px;justify-content:center;padding:8px;"></div>
+</section>
+
+<section id="sectionRight">
+  <div class="tab" id="t-shop">
+    <h2>Améliorations</h2><div class="list" id="ups"></div>
+    <h2>Bus et lignes</h2><div class="list" id="blds"></div>
+  </div>
+  <div class="tab" id="t-ach" hidden><h2>Succès</h2><div class="list" id="achl"></div></div>
+  <div class="tab" id="t-skin" hidden><h2>Skins de bus</h2><div class="list" id="skinl"></div></div>
+  <div class="tab" id="t-pack" hidden><h2>Klaxons</h2><div class="list" id="packl"></div></div>
+  <div class="tab" id="t-friends" hidden>
+    <h2>Mes amis</h2>
+    <div class="row"><input id="fin" placeholder="Pseudo de ton ami" maxlength="16"><button class="btn" id="fbtn">Ajouter</button></div>
+    <p class="msg" id="fmsg"></p><div class="list" id="flist"></div>
+  </div>
+  <div class="tab" id="t-me" hidden>
+    <h2>Photo de profil</h2><div class="av" id="av"></div>
+    <h2>Pseudo unique</h2>
+    <div class="row"><input id="pin" placeholder="3 à 16 caractères" maxlength="16"><button class="btn" id="pbtn">Réserver</button></div>
+    <p class="msg" id="pmsg"></p>
+    <h2>Mes stats</h2><div id="mstats"></div>
+    <button class="btn" id="mute" style="margin:14px 12px"></button>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const h=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+
+/* ==== CONFIG : mets l'URL de ton Worker Cloudflare ici ==== */
+const API = "https://bus-clicker.tonpseudo.workers.dev";
+
+/* ====== Données ====== */
+const B=[
+  ["Chauffeur remplaçant",15,.1],
+  ["Arrêt de bus",100,1],
+  ["Ligne de quartier",1100,8],
+  ["Dépôt",12e3,47],
+  ["Gare routière",130e3,260],
+  ["Réseau national",1.4e6,1400],
+  ["Bus à impériale",20e6,7800],
+  ["Tramway",330e6,44e3],
+  ["Métro",5.1e9,260e3],
+  ["Ligne internationale",75e9,1.6e6],
+  ["Bus volant",1e12,10e6],
+  ["Portail interdimensionnel",14e12,65e6]
+];
+const UP=["Pneus neufs","Moteur gonflé","Peinture dorée","Turbo ultime"];
+const CK=["Klaxon renforcé","Klaxon chromé","Pédale sensible","Super-klaxon","Klaxon céleste","Klaxon cosmique","Klaxon légendaire","Klaxon infini"];
+const SK=[
+  ["Jaune classique","#F5B800",0],
+  ["Bleu urbain","#3A7BD5",500],
+  ["Rouge londonien","#D64545",5e3],
+  ["Vert écolo","#3FA66B",5e4],
+  ["Rose bonbon","#F06EAA",5e5],
+  ["Noir de minuit","#2B2D31",5e6],
+  ["Violet royal","#8A5CD6",5e7],
+  ["Or massif","#FFD54A",1e9]
+];
+const HORNS=[
+  {w:"PIIIIP !",f:[370,470],t:"sawtooth",d:.55},
+  {w:"POUET !",f:[220,277],t:"square",d:.2},
+  {w:"TUUUUUT !",f:[150,190],t:"sawtooth",d:.95},
+  {w:"AH-OOGA !",f:[300],t:"sawtooth",d:.65,sweep:[240,520]},
+  {w:"PIP-PIP !",f:[880,1100],t:"square",d:.11,rep:2},
+  {w:"BEEEEEP !",f:[311,392],t:"sawtooth",d:1.1},
+  {w:"MÉÉÉÉP !",f:[466,554],t:"triangle",d:.55,vib:7},
+  {w:"TA-TIIIT !",f:[523,659],t:"sawtooth",d:.22,rep:2},
+  {w:"PRRRRT !",f:[110,165],t:"square",d:.6,vib:22},
+  {w:"BROUUUM !",f:[90,135],t:"sawtooth",d:1.2},
+  {w:"HOOOONK !",f:[130,175],t:"square",d:.9,vib:4},
+  {w:"TUUU-TUUUT !",f:[165,206],t:"sawtooth",d:.45,rep:2},
+  {w:"BOING !",f:[400],t:"sine",d:.5,sweep:[200,800]},
+  {w:"COIN-COIN !",f:[700,720],t:"square",d:.15,rep:3,vib:30},
+  {w:"WOUIIIP !",f:[300],t:"triangle",d:.6,sweep:[900,200]},
+  {w:"TA-TA-TAAA !",f:[523,659,784],t:"sawtooth",d:.25,rep:3},
+  {w:"TIN-TIN !",f:[1047,1319],t:"triangle",d:.3,rep:2},
+  {w:"TATATAAA !",f:[392,494,587],t:"square",d:.2,rep:3}
+];
+const PK=[
+  ["Classique","9 klaxons de ville",0,[0,1,2,3,4,5,6,7,8]],
+  ["Camion","Graves et puissants",2e3,[9,10,11]],
+  ["Cartoon","Boing, coin-coin et glissandos",2e4,[12,13,14]],
+  ["Fanfare","Accords de trompette",2e5,[15,16,17]]
+];
+
+/* ====== État ====== */
+const s={n:0,all:0,clicks:0,lv:Array(12).fill(0),up:{},ck:{},sk:[0],skin:0,pks:[0],pk:0,ach:{},mute:false,pseudo:"",avatar:"🚌",uid:""};
+try{const d=JSON.parse(localStorage.getItem("busclicker2")||"null");if(d)Object.assign(s,d)}catch(e){}
+if(!s.uid)s.uid="u"+(Date.now().toString(36))+(Math.random().toString(36).slice(2,8));
+const save=()=>{try{localStorage.setItem("busclicker2",JSON.stringify(s))}catch(e){}};
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ====== Formatage ====== */
+const fmt=n=>{if(n<1e3)return Math.floor(n).toLocaleString("fr-FR");const u=["k","M","Md","B","Bd"];let i=-1;while(n>=1e3&&i<u.length-1){n/=1e3;i++}return n.toFixed(n<10?2:n<100?1:0).replace(".",",")+" "+u[i]};
+const dec=n=>n.toLocaleString("fr-FR",{maximumFractionDigits:1,minimumFractionDigits:n<10?1:0});
+const mult=i=>2**[0,1,2,3].filter(t=>s.up[i+"-"+t]).length;
+const cps=()=>B.reduce((a,b,i)=>a+b[2]*s.lv[i]*mult(i),0);
+const power=()=>2**Object.keys(s.ck).length;
+const cost=i=>Math.ceil(B[i][1]*1.15**s.lv[i]);
+const nb=()=>s.lv.reduce((a,b)=>a+b,0);
+
+/* ====== Audio (klaxons procéduraux) ====== */
+let ctx=null,last=-1;
+function honk(){
+  if(s.mute)return "";
+  try{
+    ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state==="suspended")ctx.resume();
+    const P=PK[s.pk][3];let i;do{i=P[Math.floor(Math.random()*P.length)]}while(i===last&&P.length>1);last=i;
+    const hn=HORNS[i],j=.94+Math.random()*.12,now=ctx.currentTime;
+    const m=ctx.createGain();m.gain.value=.2;
+    const lp=ctx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=1900;
+    lp.connect(m);m.connect(ctx.destination);
+    for(let r=0;r<(hn.rep||1);r++){
+      const st=now+r*(hn.d+.07),g=ctx.createGain();
+      g.gain.setValueAtTime(.0001,st);
+      g.gain.exponentialRampToValueAtTime(1,st+.02);
+      g.gain.setValueAtTime(1,st+hn.d-.05);
+      g.gain.exponentialRampToValueAtTime(.0001,st+hn.d);
+      g.connect(lp);
+      hn.f.forEach(f=>{
+        const o=ctx.createOscillator();o.type=hn.t;
+        if(hn.sweep){o.frequency.setValueAtTime(hn.sweep[0]*j,st);o.frequency.exponentialRampToValueAtTime(hn.sweep[1]*j,st+hn.d*.7)}
+        else o.frequency.value=f*j;
+        if(hn.vib){
+          const l=ctx.createOscillator(),lg=ctx.createGain();
+          l.frequency.value=hn.vib;lg.gain.value=f*.03;
+          l.connect(lg);lg.connect(o.frequency);
+          l.start(st);l.stop(st+hn.d+.05);
+        }
+        o.connect(g);o.start(st);o.stop(st+hn.d+.05);
+      });
+    }
+    return hn.w;
+  }catch(e){return "PIIP !"}
+}
+
+/* ====== Effets visuels ====== */
+function pop(x,y,text,cls){
+  const el=h("span","pop "+(cls||""),text);
+  el.style.left=x+"px";el.style.top=y+"px";
+  $("fx").appendChild(el);
+  const rot=cls?(Math.random()*20-10):0,dy=reduced?0:-80;
+  el.animate(
+    [{transform:`translate(-50%,0) rotate(${rot}deg)`,opacity:1},
+     {transform:`translate(-50%,${dy}px) rotate(${rot}deg)`,opacity:0}],
+    {duration:900,easing:"ease-out"}
+  ).onfinish=()=>el.remove();
+}
+
+/* ====== Clic sur le bus ====== */
+$("bus").addEventListener("click",e=>{
+  const b=$("stage").getBoundingClientRect();
+  const r=$("bus").getBoundingClientRect();
+  const x=(e.clientX||r.left+r.width/2)-b.left;
+  const y=(e.clientY||r.top+r.height/2)-b.top;
+  s.n+=power();s.all+=power();s.clicks++;
+  const w=honk();
+  pop(x,y-10,"+"+fmt(power()));
+  if(w)pop(Math.min(Math.max(x,70),b.width-70),Math.max(y-50,30),w,"horn");
+  if(!reduced)$("bus").animate(
+    [{transform:"scale(1)"},{transform:"scale(.93,1.05)"},{transform:"scale(1)"}],
+    {duration:160}
+  );
+  render();
+});
+
+/* ====== Boutique ====== */
+const items=[];
+B.forEach((b,i)=>items.push({
+  box:"blds",name:b[0],
+  desc:()=>"+"+dec(b[2]*mult(i))+" passager/s chacun",
+  cost:()=>cost(i),own:()=>s.lv[i],
+  show:()=>s.lv[i]>0||s.all>=b[1]/3,
+  buy:()=>{s.lv[i]++}
+}));
+B.forEach((b,i)=>[0,1,2,3].forEach(t=>items.push({
+  box:"ups",name:b[0]+" · "+UP[t],
+  desc:()=>"Production ×2",
+  cost:()=>b[1]*10*[1,5,50,500][t],
+  show:()=>!s.up[i+"-"+t]&&s.lv[i]>=[1,10,25,50][t],
+  buy:()=>{s.up[i+"-"+t]=1}
+})));
+CK.forEach((c,i)=>items.push({
+  box:"ups",name:c,
+  desc:()=>"Chaque clic ×2",
+  cost:()=>100*5**i,
+  show:()=>!s.ck[i]&&s.all>=50*5**i,
+  buy:()=>{s.ck[i]=1}
+}));
+items.forEach(it=>{
+  const b=h("button","item");
+  it.d=h("small");it.c=h("span","cost");it.o=h("span","own");
+  b.append(h("b","",it.name),it.d,it.c,it.o);
+  b.addEventListener("click",()=>{const c=it.cost();if(s.n>=c){s.n-=c;it.buy();save();render()}});
+  it.el=b;$(it.box).appendChild(b);
+});
+
+/* ====== Succès ====== */
+const ACH=[];
+[100,1e3,1e4,1e5,1e6,1e7,1e9,1e11].forEach((v,i)=>ACH.push([
+  "Premiers voyageurs,Le bus se remplit,Ligne rentable,Bus bondé,Millionnaire du bitume,Capitale en marche,Milliardaire de la route,Empire du transport".split(",")[i],
+  fmt(v)+" passagers transportés",
+  ()=>s.all>=v
+]));
+[10,100,1e3,1e4].forEach((v,i)=>ACH.push([
+  "Petit coup de klaxon,Doigt rapide,Concert de klaxons,Poignet d'acier".split(",")[i],
+  fmt(v)+" clics",
+  ()=>s.clicks>=v
+]));
+[10,50,100,250].forEach((v,i)=>ACH.push([
+  "Petite flotte,Grande flotte,Armada,Flotte infinie".split(",")[i],
+  v+" bus et lignes possédés",
+  ()=>nb()>=v
+]));
+ACH.push(
+  ["Collectionneur","Posséder 4 skins",()=>s.sk.length>=4],
+  ["Mélomane","Posséder les 4 packs de klaxon",()=>s.pks.length>=4],
+  ["Identifié","Réserver un pseudo",()=>!!s.pseudo]
+);
+function checkAch(){
+  ACH.forEach((a,i)=>{
+    if(!s.ach[i]&&a[2]()){
+      s.ach[i]=1;save();
+      pop($("stage").clientWidth/2,36,"Succès : "+a[0],"horn");
+    }
+  });
+}
+
+/* ====== Onglets ====== */
+const TABS=[["shop","Boutique"],["ach","Succès"],["skin","Skins"],["pack","Klaxons"],["friends","Amis"],["me","Profil"]];
+let cur="shop";
+TABS.forEach(([k,l])=>{
+  const b=h("button","",l);
+  b.setAttribute("role","tab");b.dataset.k=k;
+  b.addEventListener("click",()=>{cur=k;renderTab()});
+  $("tabs").appendChild(b);
+});
+
+function pickList(box,arr,owned,sel,pick){
+  box.replaceChildren();
+  arr.forEach((a,i)=>{
+    const b=h("button","item"+(sel()===i?" done":"")),sw=a[1][0]==="#";
+    const nm=h("b");
+    if(sw){const d=h("span","sw");d.style.background=a[1];nm.append(d)}
+    nm.append(a[0]);
+    b.append(
+      nm,
+      h("small","",sw?"Couleur de ton bus":a[1]),
+      h("span","cost",owned(i)?(sel()===i?"Équipé":"Équiper"):fmt(a[2]))
+    );
+    if(!owned(i)&&s.n<a[2])b.classList.add("off");
+    b.addEventListener("click",()=>{pick(i);save();renderTab()});
+    box.appendChild(b);
+  });
+}
+function applySkin(){document.documentElement.style.setProperty("--bus",SK[s.skin][1])}
+
+function renderTab(){
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.k===cur));
+  TABS.forEach(([k])=>$("t-"+k).hidden=k!==cur);
+  if(cur==="ach"){
+    $("achl").replaceChildren(...ACH.map((a,i)=>{
+      const b=h("div","item"+(s.ach[i]?" done":" off"));
+      b.append(h("b","",a[0]),h("small","",a[1]),h("span","cost",s.ach[i]?"Obtenu":"À débloquer"));
+      return b;
+    }));
+  }
+  if(cur==="skin")pickList($("skinl"),SK,i=>s.sk.includes(i),()=>s.skin,i=>{
+    if(s.sk.includes(i))s.skin=i;
+    else if(s.n>=SK[i][2]){s.n-=SK[i][2];s.sk.push(i);s.skin=i}
+    applySkin();
+  });
+  if(cur==="pack")pickList($("packl"),PK,i=>s.pks.includes(i),()=>s.pk,i=>{
+    if(s.pks.includes(i))s.pk=i;
+    else if(s.n>=PK[i][2]){s.n-=PK[i][2];s.pks.push(i);s.pk=i}
+  });
+  if(cur==="me"){
+    $("av").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.textContent===s.avatar));
+    const rows=[
+      ["Pseudo",s.pseudo||"Aucun"],
+      ["Passagers transportés",fmt(s.all)],
+      ["Par seconde",dec(cps())],
+      ["Clics",fmt(s.clicks)],
+      ["Bus et lignes",nb()],
+      ["Succès",Object.keys(s.ach).length+" / "+ACH.length],
+      ["Skins",s.sk.length+" / "+SK.length],
+      ["Packs de klaxon",s.pks.length+" / "+PK.length]
+    ];
+    $("mstats").replaceChildren(...rows.map(r=>{
+      const d=h("div","stat");d.append(h("span","",r[0]),h("b","",r[1]));return d;
+    }));
+  }
+  if(cur==="friends")renderFriends();
+}
+
+/* Avatars (emojis) */
+"🚌🚍🚎😎🦊🐧🤖👽🦄🌟🍕".match(/\p{Extended_Pictographic}/gu).forEach(a=>{
+  const b=h("button","",a);
+  b.addEventListener("click",()=>{s.avatar=a;save();render();renderTab();sync()});
+  $("av").appendChild(b);
+});
+$("mute").addEventListener("click",()=>{
+  s.mute=!s.mute;save();
+  $("mute").textContent=s.mute?"Son coupé":"Son activé";
+});
+
+/* ====== API GitHub via Worker ====== */
+let remoteDB=null,friends=[],fdata={};
+const say=(id,t)=>$(id).textContent=t;
+
+async function loadDB(){
+  try{const r=await fetch(API+"/db");remoteDB=await r.json()}catch(e){remoteDB={}}
+  if(!remoteDB.pseudos)remoteDB.pseudos={};
+  if(!remoteDB.players)remoteDB.players={};
+  if(!remoteDB.friends)remoteDB.friends={};
+}
+async function saveDB(){
+  try{await fetch(API+"/db",{method:"POST",body:JSON.stringify(remoteDB)})}catch(e){}
+}
+function sync(){
+  if(!remoteDB||!s.pseudo)return;
+  remoteDB.players[s.uid]={
+    pseudo:s.pseudo,avatar:s.avatar,
+    all:Math.floor(s.all),cps:cps(),
+    skin:SK[s.skin][1],t:Date.now()
+  };
+  saveDB();
+}
+async function claim(){
+  const raw=$("pin").value.trim(),id=raw.toLowerCase();
+  if(!/^[a-z0-9_-]{3,16}$/.test(id))return say("pmsg","3 à 16 caractères : lettres sans accent, chiffres, _ ou -");
+  if(!remoteDB)return say("pmsg","Connexion au serveur impossible.");
+  await loadDB();
+  const cur=remoteDB.pseudos[id];
+  if(cur&&cur.owner!==s.uid)return say("pmsg","Ce pseudo est déjà pris.");
+  const old=s.pseudo.toLowerCase();
+  if(old&&old!==id&&remoteDB.pseudos[old]&&remoteDB.pseudos[old].owner===s.uid)delete remoteDB.pseudos[old];
+  remoteDB.pseudos[id]={owner:s.uid,pseudo:raw};
+  s.pseudo=raw;save();
+  remoteDB.players[s.uid]={
+    pseudo:raw,avatar:s.avatar,
+    all:Math.floor(s.all),cps:cps(),
+    skin:SK[s.skin][1],t:Date.now()
+  };
+  await saveDB();
+  render();renderTab();
+  say("pmsg","Pseudo réservé : "+raw);
+}
+async function addFriend(){
+  const id=$("fin").value.trim().toLowerCase();
+  if(!remoteDB)return say("fmsg","Connexion au serveur impossible.");
+  if(!s.pseudo)return say("fmsg","Réserve d'abord ton pseudo dans l'onglet Profil.");
+  await loadDB();
+  const p=remoteDB.pseudos[id];
+  if(!p)return say("fmsg","Aucun joueur avec ce pseudo.");
+  if(p.owner===s.uid)return say("fmsg","C'est ton propre pseudo.");
+  const list=remoteDB.friends[s.uid]||(remoteDB.friends[s.uid]=[]);
+  if(list.includes(p.owner))return say("fmsg","Déjà dans ta liste.");
+  list.push(p.owner);
+  await saveDB();
+  friends=list;watch();
+  say("fmsg","Ami ajouté.");$("fin").value="";
+}
+async function watch(){
+  await loadDB();
+  const list=remoteDB.friends[s.uid]||[];
+  friends=list;fdata={};
+  list.forEach(id=>{if(remoteDB.players[id])fdata[id]=remoteDB.players[id]});
+  if(cur==="friends")renderFriends();
+}
+function renderFriends(){
+  const l=$("flist");
+  if(!friends.length){l.replaceChildren(h("p","msg","Ajoute un ami avec son pseudo."));return}
+  l.replaceChildren(...friends.map(id=>{
+    const d=fdata[id],b=h("div","item");
+    b.append(
+      h("b","",d?d.avatar+" "+d.pseudo:"Joueur"),
+      h("small","",d?fmt(d.all)+" passagers · "+dec(d.cps)+"/s":"Pas encore de stats"),
+      h("span","cost","En ligne")
+    );
+    return b;
+  }));
+}
+$("pbtn").addEventListener("click",claim);
+$("fbtn").addEventListener("click",addFriend);
+
+/* ====== Boucle principale ====== */
+function render(){
+  $("n").textContent=fmt(s.n);
+  $("ps").textContent=dec(cps())+" passagers par seconde";
+  $("chip").textContent=s.avatar+" "+(s.pseudo||"Joueur sans pseudo");
+  document.title=fmt(s.n)+" passagers · Bus Clicker";
+  items.forEach(it=>{
+    const sh=it.show();it.el.hidden=!sh;if(!sh)return;
+    const c=it.cost(),off=s.n<c;
+    it.d.textContent=it.desc();
+    it.c.textContent=fmt(c);
+    it.o.textContent=it.own?it.own():"";
+    it.el.classList.toggle("off",off);
+    it.el.setAttribute("aria-disabled",off);
+  });
+  checkAch();
+}
+
+s.lv=s.lv.concat(Array(12).fill(0)).slice(0,12);
+applySkin();
+$("mute").textContent=s.mute?"Son coupé":"Son activé";
+renderTab();
+setInterval(()=>{const g=cps()/10;s.n+=g;s.all+=g;render()},100);
+setInterval(()=>{
+  save();
+  if(["skin","pack","ach","me"].includes(cur))renderTab();
+},2000);
+render();
+
+(async()=>{
+  await loadDB();
+  await watch();
+  sync();
+  setInterval(()=>{sync();if(cur==="friends")watch()},15000);
+})();
+</script>
+</body>
+</html>
