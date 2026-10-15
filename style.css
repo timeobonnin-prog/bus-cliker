@@ -1317,7 +1317,662 @@ body{scrollbar-color:var(--bus-yellow) #111}
 .highlightHover:active{filter:brightness(85%);opacity:1}
 
 .ifNoAds{display:none}
-.noAds .ifNoAds{display:block}
+.noAds .ifNoAds{display:block/* ============================================================================
+   BUS CLICKER — style.css
+   Basé sur la structure du reset CSS de Cookie Clicker.
+   Adapté à index.html (main > .stage + .shop).
+   Thème : bus (jaune #F5B800, asphalte, cuir de siège).
+   ============================================================================ */
+
+/* ============================================================================
+   RESET
+   ============================================================================ */
+div,span,h1,h2,h3,h4,h5,h6,p,ul,ol{margin:0;padding:0}
+body{line-height:1}
+ol,ul{list-style:none}
+blockquote,q{quotes:none}
+blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}
+table{border-collapse:collapse;border-spacing:0}
+button{outline:none;border:none;font:inherit;cursor:pointer}
+button:focus{outline:1px solid rgba(255,200,100,0.5);outline-offset:-1px}
+
+/* ============================================================================
+   BASE
+   ============================================================================ */
+:root{
+  --accent:#F5B800;          /* jaune bus */
+  --accent-dark:#B88700;
+  --accent-light:#FFE082;
+  --accent-glow:rgba(245,184,0,0.6);
+  --red:#D64545;
+  --asphalt:#1a1c20;
+  --asphalt-dark:#0d0f12;
+  --seat:#3E2723;            /* cuir de siège */
+  --seat-dark:#2D1B17;
+  --steel:#5D4037;
+  --ticket:#FFF3B0;          /* ticket jaune pâle */
+  --frame-cream:#ece2b6;
+  --frame-brown:#875526;
+  --frame-dark:#733726;
+  --frame-light:#dfbc9a;
+
+  --sky:#BFE3EC;
+  --panel:#A9D6E2;
+  --card:#FFF8E1;
+  --bus:#F5B800;
+  --glass:#CDEBF3;
+  --road:#2A2D33;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --sky:#14202B;--panel:#1C2C3A;--card:#24313F;
+    --road:#0D1116;--glass:#9CCBD8;
+  }
+}
+:root[data-theme="dark"]{
+  --sky:#14202B;--panel:#1C2C3A;--card:#24313F;
+  --road:#0D1116;--glass:#9CCBD8;
+}
+
+html,body{width:100%;height:100%}
+
+body
+{
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  -khtml-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+  touch-action:manipulation;
+
+  color:#fff;
+  /* texture asphalte en pur CSS (remplace darkNoise.jpg) */
+  background:#1a1c20;
+  background-image:
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,0.03) 1px,transparent 1px),
+    radial-gradient(circle at 70% 60%,rgba(255,255,255,0.02) 1px,transparent 1px),
+    radial-gradient(circle at 40% 80%,rgba(0,0,0,0.30) 1px,transparent 1px),
+    radial-gradient(circle at 85% 15%,rgba(0,0,0,0.25) 1px,transparent 1px),
+    linear-gradient(180deg,#1a1c20 0%,#0d0f12 100%);
+  background-size:20px 20px,30px 30px,15px 15px,25px 25px,100% 100%;
+
+  font-family:'Nunito',Tahoma,Arial,sans-serif;
+  font-weight:600;
+  font-size:13px;
+  overflow-x:hidden;
+  min-height:100vh;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+
+.selectable{user-select:text}
+
+small{font-size:80%}
+
+a,a:visited{text-decoration:underline;cursor:pointer;color:#ccc}
+a:hover{text-shadow:0 0 3px #fff;color:#fff}
+a:active{opacity:0.8;background:transparent}
+
+.titleFont,.title,.section,.lockedTitle,.smallFancyButton,h1,h2{
+  font-family:'Bungee',Impact,'Arial Black',sans-serif;
+  font-weight:400;
+}
+
+/* ============================================================================
+   LAYOUT PRINCIPAL (main en grille 2 colonnes)
+   ============================================================================ */
+main{
+  max-width:1050px;
+  margin:0 auto;
+  padding:16px;
+  display:grid;
+  gap:16px;
+}
+@media(min-width:820px){
+  main{grid-template-columns:1fr 1.1fr;align-items:start;padding:28px}
+  .stage{position:sticky;top:16px}
+}
+
+/* ============================================================================
+   SECTIONS / TITRES
+   ============================================================================ */
+.title,.section,.lockedTitle{
+  font-size:22px;
+  text-shadow:0 1px 4px #000;
+  color:#fff;
+}
+
+h1{
+  font-family:'Bungee',Impact,'Arial Black',sans-serif;
+  font-weight:400;
+  font-size:clamp(22px,6vw,30px);
+  margin:0 0 6px;
+  color:#fff;
+  text-shadow:
+    0 -2px 6px rgba(255,240,150,0.5),
+    0 1px 0 rgba(100,100,100,1),
+    0 2px 4px rgba(0,0,0,1);
+}
+
+h2{
+  font-family:'Bungee',Impact,'Arial Black',sans-serif;
+  font-weight:400;
+  font-size:16px;
+  margin:14px 0 8px;
+  color:var(--ticket);
+  text-shadow:0 1px 2px #000;
+}
+
+.section
+{
+  font-variant:small-caps;
+  text-align:center;
+  padding:0 16px;
+  background:linear-gradient(to right,
+    rgba(0,0,0,0),rgba(0,0,0,0),
+    rgba(0,0,0,0.5),
+    rgba(0,0,0,0),rgba(0,0,0,0));
+  margin:12px 0;
+  text-shadow:
+    0 -2px 6px rgba(255,240,150,0.55),
+    0 1px 0 rgba(100,100,100,1),
+    0 2px 4px rgba(0,0,0,1);
+}
+.section:before,.section:after
+{
+  content:'';
+  display:block;
+  height:1px;
+  margin:6px 0;
+  background:linear-gradient(to right,
+    rgba(255,255,255,0),rgba(255,255,255,0),
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0),rgba(255,255,255,0));
+}
+
+/* ============================================================================
+   COLONNE GAUCHE — LA SCÈNE (le bus)
+   ============================================================================ */
+.stage
+{
+  position:relative;
+  text-align:center;
+  overflow:hidden;
+  padding:18px 16px 24px;
+  border-radius:12px;
+
+  /* fond cuir de siège */
+  background:
+    radial-gradient(ellipse at top,rgba(255,255,255,0.06) 0%,transparent 60%),
+    linear-gradient(180deg,var(--seat) 0%,var(--seat-dark) 100%);
+
+  /* cadre 3D façon .framed de Cookie Clicker */
+  border:1px solid var(--accent);
+  border-color:var(--frame-cream) var(--frame-brown) var(--frame-dark) var(--frame-light);
+  box-shadow:
+    0 0 1px 2px rgba(0,0,0,0.5),
+    0 2px 4px rgba(0,0,0,0.25),
+    0 0 2px 2px #000 inset,
+    0 1px 0 1px rgba(255,255,255,0.15) inset;
+}
+
+#chip{
+  font-size:15px;
+  font-weight:800;
+  margin-bottom:8px;
+  color:var(--ticket);
+  text-shadow:0 1px 2px #000;
+}
+
+#n{
+  font-family:'Bungee',Impact,'Arial Black',sans-serif;
+  font-weight:400;
+  font-size:clamp(42px,12vw,70px);
+  line-height:1;
+  color:#fff;
+  text-shadow:
+    0 2px 8px #000,
+    0 0 20px rgba(245,184,0,0.4);
+}
+
+.lbl{
+  font-size:17px;
+  font-weight:800;
+  margin-top:4px;
+  color:var(--ticket);
+  text-shadow:0 1px 2px #000;
+}
+
+#ps{
+  font-size:15px;
+  opacity:.85;
+  color:#fff;
+  text-shadow:0 1px 1px #000;
+}
+
+/* ============================================================================
+   LE BUS (bouton principal)
+   ============================================================================ */
+#bus
+{
+  display:block;
+  margin:16px auto 0;
+  width:min(420px,92%);
+  background:none;
+  border:0;
+  padding:0;
+  cursor:pointer;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+  z-index:1;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,0.6));
+  transition:filter 0.15s;
+}
+#bus:hover{filter:drop-shadow(0 8px 12px rgba(0,0,0,0.6)) brightness(1.08)}
+#bus:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+#bus svg{width:100%;height:auto;display:block;pointer-events:none}
+
+/* ============================================================================
+   LA ROUTE SOUS LE BUS
+   ============================================================================ */
+.road
+{
+  height:20px;
+  margin:-12px 4px 0;
+  border-radius:4px;
+  background:var(--road);
+  position:relative;
+  box-shadow:0 4px 12px rgba(0,0,0,0.6) inset;
+}
+.road::after
+{
+  content:"";
+  position:absolute;
+  left:12px;right:12px;top:9px;height:4px;
+  background:repeating-linear-gradient(90deg,
+    #FFF3B0 0 22px,
+    transparent 22px 40px);
+  box-shadow:0 0 4px rgba(255,243,176,0.5);
+}
+
+/* ============================================================================
+   EFFETS FLOTTANTS (+passagers, klaxon)
+   ============================================================================ */
+#fx{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+
+.pop
+{
+  position:absolute;
+  font-family:'Bungee',Impact,sans-serif;
+  font-weight:400;
+  font-size:22px;
+  white-space:nowrap;
+  text-shadow:
+    0 2px 0 #000,
+    0 0 8px rgba(245,184,0,0.8);
+  color:var(--ticket);
+}
+.pop.horn{font-size:25px;color:var(--accent)}
+
+/* ============================================================================
+   COLONNE DROITE — LA BOUTIQUE
+   ============================================================================ */
+.shop
+{
+  min-width:0;
+  padding:14px 14px 20px;
+  border-radius:12px;
+
+  /* panneau noir bruité */
+  background:
+    radial-gradient(ellipse at top,rgba(255,255,255,0.05) 0%,transparent 60%),
+    linear-gradient(180deg,#1a1c20 0%,#0d0f12 100%);
+
+  /* cadre 3D doré */
+  border:1px solid var(--accent);
+  border-color:var(--frame-cream) var(--frame-brown) var(--frame-dark) var(--frame-light);
+  box-shadow:
+    0 0 1px 2px rgba(0,0,0,0.5),
+    0 2px 4px rgba(0,0,0,0.25),
+    0 0 2px 2px #000 inset,
+    0 1px 0 1px rgba(255,255,255,0.15) inset;
+}
+
+/* ============================================================================
+   ONGLETS
+   ============================================================================ */
+.tabs
+{
+  display:flex;
+  gap:4px;
+  overflow-x:auto;
+  padding-bottom:10px;
+}
+.tabs button
+{
+  flex:none;
+  font-family:'Bungee',Impact,'Arial Black',sans-serif;
+  font-weight:400;
+  font-size:12px;
+  color:#fff;
+  background:linear-gradient(180deg,var(--steel) 0%,var(--seat) 100%);
+  border:1px solid #1a1a1a;
+  border-radius:3px;
+  padding:6px 12px;
+  text-shadow:0 1px 1px #000;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.15) inset,
+    0 2px 3px rgba(0,0,0,0.5);
+  transition:filter 0.1s;
+}
+.tabs button:hover{filter:brightness(1.15)}
+.tabs button[aria-selected="true"]
+{
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent-dark) 100%);
+  color:#23262B;
+  text-shadow:0 1px 0 rgba(255,255,255,0.4);
+}
+
+.tab[hidden]{display:none}
+
+/* ============================================================================
+   LISTE D'ARTICLES
+   ============================================================================ */
+.list{
+  display:grid;
+  gap:6px;
+}
+
+/* ============================================================================
+   ITEM (cadre doré biseauté = .framed de Cookie Clicker)
+   ============================================================================ */
+.item
+{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:2px 10px;
+  align-items:center;
+  width:100%;
+  text-align:left;
+  font:inherit;
+  color:#eee;
+
+  /* fond noir bruité + bordure biseautée */
+  background:
+    radial-gradient(ellipse at top,rgba(255,255,255,0.06) 0%,transparent 60%),
+    linear-gradient(180deg,#1a1c20 0%,#0d0f12 100%);
+  border:1px solid var(--accent);
+  border-color:var(--frame-cream) var(--frame-brown) var(--frame-dark) var(--frame-light);
+  border-radius:3px;
+  padding:8px 10px;
+  cursor:pointer;
+  touch-action:manipulation;
+
+  box-shadow:
+    0 0 1px 2px rgba(0,0,0,0.5),
+    0 2px 4px rgba(0,0,0,0.25),
+    0 0 2px 2px #000 inset,
+    0 1px 0 1px rgba(255,255,255,0.15) inset;
+
+  text-shadow:0 1px 1px #000;
+  transition:filter 0.15s,opacity 0.15s;
+}
+.item:hover{filter:brightness(1.18)}
+.item[hidden]{display:none}
+.item.off{opacity:.55;filter:grayscale(0.4)}
+.item.done
+{
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent-dark) 100%);
+  color:#23262B;
+  opacity:1;
+  text-shadow:0 1px 0 rgba(255,255,255,0.4);
+}
+.item b{font-weight:700;font-size:14px;color:#fff}
+.item.done b{color:#23262B}
+.item small{
+  font-size:11px;
+  opacity:.85;
+  grid-column:1;
+  color:#ccc;
+}
+.item.done small{color:#3E2723}
+
+/* Étiquette de prix (jaune bus) */
+.cost
+{
+  grid-row:1/3;
+  grid-column:2;
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent-dark) 100%);
+  color:#23262B;
+  font-weight:800;
+  border-radius:3px;
+  padding:4px 10px;
+  font-size:12px;
+  white-space:nowrap;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.4) inset,
+    0 -1px 0 rgba(0,0,0,0.4) inset;
+  text-shadow:0 1px 0 rgba(255,255,255,0.3);
+}
+.item.done .cost
+{
+  background:rgba(0,0,0,0.25);
+  color:#fff;
+  box-shadow:0 1px 0 rgba(255,255,255,0.15) inset;
+}
+
+/* Compteur (nombre possédé) */
+.own
+{
+  grid-row:1/3;
+  grid-column:3;
+  font-family:'Bungee',Impact,'Arial Black',sans-serif;
+  font-weight:400;
+  font-size:19px;
+  color:#fff;
+  text-shadow:0 1px 2px #000;
+}
+.item.done .own{color:#23262B}
+
+/* Pastille couleur skin */
+.sw
+{
+  display:inline-block;
+  width:14px;height:14px;
+  border-radius:2px;
+  border:1px solid #000;
+  vertical-align:-2px;
+  margin-right:6px;
+  box-shadow:0 0 4px rgba(255,255,255,0.3);
+}
+
+/* ============================================================================
+   FORMULAIRES (input, boutons, messages)
+   ============================================================================ */
+.row{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin:8px 0;
+}
+
+input
+{
+  flex:1;
+  min-width:120px;
+  font:inherit;
+  font-weight:700;
+  color:#eee;
+
+  background:linear-gradient(180deg,#1a1c20,#0d0f12);
+  border:1px solid var(--accent);
+  border-color:var(--frame-cream) var(--frame-brown) var(--frame-dark) var(--frame-light);
+  border-radius:3px;
+  padding:8px 10px;
+
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5) inset,
+    0 1px 2px rgba(0,0,0,0.5) inset;
+}
+input::placeholder{color:rgba(255,255,255,0.4)}
+input:focus{outline:2px solid var(--accent);outline-offset:1px}
+
+.btn
+{
+  font-family:'Bungee',Impact,'Arial Black',sans-serif;
+  font-weight:400;
+  color:#23262B;
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent-dark) 100%);
+  border:1px solid var(--accent);
+  border-color:var(--frame-cream) var(--frame-brown) var(--frame-dark) var(--frame-light);
+  border-radius:3px;
+  padding:8px 14px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.4) inset,
+    0 -1px 0 rgba(0,0,0,0.4) inset,
+    0 2px 4px rgba(0,0,0,0.4);
+  text-shadow:0 1px 0 rgba(255,255,255,0.3);
+  transition:filter 0.1s;
+}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{filter:brightness(0.9)}
+
+.msg{
+  min-height:20px;
+  font-size:12px;
+  margin:4px 0;
+  color:var(--ticket);
+  text-shadow:0 1px 1px #000;
+}
+
+/* ============================================================================
+   AVATARS (emoji dans l'onglet Profil)
+   ============================================================================ */
+.av{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:8px 0;
+}
+.av button
+{
+  font-size:22px;
+  width:42px;height:42px;
+  border-radius:4px;
+  border:1px solid var(--accent);
+  border-color:var(--frame-cream) var(--frame-brown) var(--frame-dark) var(--frame-light);
+  background:linear-gradient(180deg,var(--seat),var(--seat-dark));
+  cursor:pointer;
+  transition:filter 0.1s;
+}
+.av button:hover{filter:brightness(1.2)}
+.av button[aria-pressed="true"]
+{
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent-dark) 100%);
+  color:#23262B;
+  box-shadow:0 0 8px var(--accent-glow);
+}
+
+/* ============================================================================
+   STATISTIQUES (onglet Profil)
+   ============================================================================ */
+.stat
+{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+  border-bottom:1px dashed rgba(255,255,255,0.15);
+  color:#fff;
+  font-size:13px;
+}
+.stat b{
+  color:var(--ticket);
+  font-family:'Bungee',Impact,'Arial Black',sans-serif;
+  font-weight:400;
+  font-size:14px;
+}
+
+/* ============================================================================
+   BOUTON MUTE (onglet Profil)
+   ============================================================================ */
+#mute{margin-top:14px}
+
+/* ============================================================================
+   ANIMATIONS (reprises de Cookie Clicker)
+   ============================================================================ */
+@keyframes pucker{
+  0%{transform:scale(1,1)}
+  10%{transform:scale(1.15,0.85)}
+  20%{transform:scale(1.2,0.8)}
+  50%{transform:scale(0.75,1.25)}
+  70%{transform:scale(1.05,0.95)}
+  90%{transform:scale(0.95,1.05)}
+  100%{transform:scale(1,1)}
+}
+.pucker{animation:pucker 0.2s ease-out}
+
+@keyframes wobble{
+  0%{transform:scale(0.5,0.5)}
+  20%{transform:scale(1.3,0.7)}
+  30%{transform:scale(0.7,1.3)}
+  50%{transform:scale(1.2,0.8)}
+  70%{transform:scale(0.9,1.1)}
+  90%{transform:scale(1.1,0.9)}
+  100%{transform:scale(1,1)}
+}
+.wobbling{animation:wobble 0.1s ease-out}
+
+@keyframes riseUp{
+  from{top:20px;opacity:0}
+  to{top:0;opacity:1}
+}
+.risingUp{animation:riseUp 1s 1 forwards}
+
+@keyframes blink{
+  0%{opacity:0.5}
+  50%{opacity:1}
+  100%{opacity:0.5}
+}
+.blinking{animation:blink 0.75s infinite ease-in-out}
+
+@media (prefers-reduced-motion:reduce){
+  *{
+    animation-duration:0.01ms !important;
+    transition-duration:0.01ms !important;
+  }
+}
+
+/* ============================================================================
+   SCROLLBAR (jaune bus)
+   ============================================================================ */
+body{scrollbar-color:var(--accent) #0d0f12}
+::-webkit-scrollbar{-webkit-appearance:none;width:12px;height:12px}
+::-webkit-scrollbar-track{background:#0d0f12}
+::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,var(--accent) 0%,var(--accent-dark) 100%);
+  border:2px solid #0d0f12;
+  border-radius:6px;
+  box-shadow:0 0 0 1px rgba(255,224,130,0.8) inset;
+}
+::-webkit-scrollbar-thumb:hover{filter:brightness(1.15)}
+
+/* ============================================================================
+   RESPONSIVE — mobile
+   ============================================================================ */
+@media(max-width:820px){
+  main{padding:12px;gap:12px}
+  .stage{padding:14px 12px 20px}
+  #n{font-size:clamp(36px,14vw,56px)}
+  .shop{padding:12px}
+  .item b{font-size:13px}
+  .cost{font-size:11px;padding:3px 8px}
+  .own{font-size:16px}
+  h2{font-size:15px}
+}}
 .noAds #support,.noAds #smallSupport,.noAds .supportComment{display:none}
 
 .srOnly
