@@ -12,7 +12,7 @@ achète des klaxons, débloque des skins... et grimpe jusqu'au **Portail interdi
 
 ## 🎮 Démo
 
-👉 **[Jouer maintenant](https://TON-PSEUDO.github.io/bus-clicker/)** *(remplace par ton URL GitHub Pages)*
+👉 **[Jouer maintenant](https://timeobonnin-prog.github.io/bus-cliker/)** 
 
 ---
 
