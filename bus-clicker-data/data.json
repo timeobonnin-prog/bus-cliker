@@ -1,0 +1,22 @@
+{
+  "pseudos": {
+    "thomas": { "owner": "u_abc123", "pseudo": "Thomas" },
+    "marie":  { "owner": "u_xyz789", "pseudo": "Marie" }
+  },
+  "players": {
+    "u_abc123": {
+      "pseudo": "Thomas", "avatar": "🚌",
+      "all": 12500000, "cps": 340.5,
+      "skin": "#F5B800", "t": 1730000000000
+    },
+    "u_xyz789": {
+      "pseudo": "Marie", "avatar": "🦊",
+      "all": 45200000, "cps": 1250.0,
+      "skin": "#D64545", "t": 1730000000000
+    }
+  },
+  "friends": {
+    "u_abc123": ["u_xyz789"],
+    "u_xyz789": ["u_abc123"]
+  }
+}
